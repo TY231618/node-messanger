@@ -20,7 +20,7 @@
 
         <br />
 
-        <button class="btn btn-success">Send</button>   
+        <button id="send" class="btn btn-success">Send</button>   
 
       </div>
 
@@ -32,7 +32,9 @@
 
     <script>
       $(() => {
-        addMessage({name: 'Tony', message: 'Hello'});
+        $("#send").click(() => {
+          addMessage({name: 'Tony', message: 'Hello'});
+        }) 
       })
 
       function addMessage(message) {
