@@ -10,6 +10,8 @@ app.use(express.static(__dirname));
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({extended: false}));
 
+mongoose.Promise = Promise;
+
 let dbURL = 'mongodb://test:test@ds113925.mlab.com:13925/node-messanger';
 
 app.get('/messages', (req, res) => {
@@ -21,25 +23,62 @@ app.get('/messages', (req, res) => {
   });
 });
 
+//callback hell post request and remove happens after the save!!!
+// app.post('/messages', (req, res) => {
+//   let message = new Message(req.body);
+
+//   message.save((err) => {
+//     if(err) sendStatus(500);
+
+//     Message.findOne({message: 'badword'}, (err, censored) => {
+//       if(censored) {
+//         console.log('censored word found: ', censored);
+//         Message.remove({_id: censored.id}, (err) => {
+//           console.log('removed censored message');
+//         });
+//       }
+//     });
+
+//     io.emit('message', req.body);
+//     res.sendStatus(200);
+//   });
+// });
+
+//using promises
 app.post('/messages', (req, res) => {
   let message = new Message(req.body);
 
-  message.save((err) => {
-    if(err) sendStatus(500);
-
-    Message.findOne({message: 'badword'}, (err, censored) => {
+  message.save()
+    .then(() => {
+      console.log('saved');
+      return Message.findOne({message: 'badword'});
+    })
+    .then((censored) => {
       if(censored) {
         console.log('censored word found: ', censored);
-        Message.remove({_id: censored.id}, (err) => {
-          console.log('removed censored message');
-        });
+        return Message.remove({_id: censored.id});
       }
-    });
 
-    io.emit('message', req.body);
-    res.sendStatus(200);
-  });
+      io.emit('message', req.body);
+      res.sendStatus(200);
+    })
+    .catch((err) => {
+      res.sendStatus(500);
+      return console.error(err);
+    });
 });
+
+//original post request
+// app.post('/messages', (req, res) => {
+//   let message = new Message(req.body);
+
+//   message.save((err) => {
+//     if(err) sendStatus(500);
+
+//     io.emit('message', req.body);
+//     res.sendStatus(200);
+//   });
+// });
 
 io.on('connection', (socket) => {
   console.log('a user is connected');
