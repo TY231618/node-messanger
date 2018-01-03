@@ -4,6 +4,7 @@ let app = express();
 let mongoose = require('mongoose');
 let http = require('http').Server(app);
 let io = require('socket.io')(http);
+let Message = require('./message');
 
 app.use(express.static(__dirname));
 app.use(bodyParser.json());
@@ -11,25 +12,24 @@ app.use(bodyParser.urlencoded({extended: false}));
 
 let dbURL = 'mongodb://test:test@ds113925.mlab.com:13925/node-messanger';
 
-let messages = [
-  {
-    name: 'Tony',
-    message: 'HELLO'
-  },
-  {
-    name: 'Sally',
-    message: 'Hi'
-  }
-];
-
 app.get('/messages', (req, res) => {
-  res.send(messages);
+
+  Message.find({}, (err, messages) => {
+    if(err) sendStatus(500);
+
+    res.send(messages);
+  });
 });
 
 app.post('/messages', (req, res) => {
-  messages.push(req.body);
-  io.emit('message', req.body);
-  res.sendStatus(200);
+  let message = new Message(req.body);
+
+  message.save((err) => {
+    if(err) sendStatus(500);
+
+    io.emit('message', req.body);
+    res.sendStatus(200);
+  });
 });
 
 io.on('connection', (socket) => {
