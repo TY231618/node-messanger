@@ -17,7 +17,11 @@
 
         <br />
 
-        <input class="form-control" placeholder="name">
+        <input id="name" class="form-control" placeholder="name">
+
+        <br />
+        
+        <textarea id="message" class="form-control" placeholder="message"></textarea>
 
         <br />
 
@@ -34,7 +38,9 @@
     <script>
       $(() => {
         $("#send").click(() => {
-          addMessage({name: 'Tony', message: 'Hello'});
+          let message = { name: $("#name").val(), message: $("#message").val() };
+
+          postMessage(message);
         }) 
 
         getMessages();
@@ -50,6 +56,10 @@
             addMessage(message);
           });
         })
+      }
+
+      function postMessage(message) {
+        $.post('http://localhost:3000/messages', message);
       }
     </script>
 
