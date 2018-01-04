@@ -82,22 +82,26 @@ app.get('/messages', (req, res) => {
 
 //now using async
 app.post('/messages', async (req, res) => {
-
-  let message = new Message(req.body);
-
-  let savedMessage = await message.save();
-
-  console.log('saved');
-  
-  let censored = await Message.findOne({message: 'badword'});
-
-  if(censored) {
-    await Message.remove({_id: censored.id});
-  } else {
-    io.emit('message', req.body);
+  try {
+    let message = new Message(req.body);
+    
+      let savedMessage = await message.save();
+    
+      console.log('saved');
+    
+      let censored = await Message.findOne({message: 'badword'});
+    
+      if(censored) {
+        await Message.remove({_id: censored.id});
+      } else {
+        io.emit('message', req.body);
+      }
+    
+      res.sendStatus(200);
+  } catch (err) {
+    res.sendStatus(500);
+    return console.error(err);
   }
-
-  res.sendStatus(200);
 });
 
 io.on('connection', (socket) => {
