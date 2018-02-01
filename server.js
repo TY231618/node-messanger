@@ -5,6 +5,7 @@ let mongoose = require('mongoose');
 let http = require('http').Server(app);
 let io = require('socket.io')(http);
 let messageController = require('./src/controllers/messageController');
+let config = require('./config');
 
 app.use(express.static(__dirname));
 app.use(bodyParser.json());
@@ -12,7 +13,7 @@ app.use(bodyParser.urlencoded({extended: false}));
 
 mongoose.Promise = Promise;
 
-let dbURL = 'mongodb://test:test@ds113925.mlab.com:13925/node-messanger';
+let dbURL = 'mongodb://' + config.name + ':' + config.password + '@ds113925.mlab.com:13925/node-messanger';
 
 messageController(app);
 

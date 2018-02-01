@@ -1,6 +1,9 @@
 let Message = require('../models/message');
 
 module.exports = (app) => {
+  let http = require('http').Server(app);
+  let io = require('socket.io')(http);
+
   app.get('/messages', (req, res) => {
     
     Message.find({}, (err, messages) => {
@@ -22,16 +25,16 @@ module.exports = (app) => {
   });
     
     //original post request
-    // app.post('/messages', (req, res) => {
-    //   let message = new Message(req.body);
-    
-    //   message.save((err) => {
-    //     if(err) sendStatus(500);
-    
-    //     io.emit('message', req.body);
-    //     res.sendStatus(200);
-    //   });
-    // });
+  app.post('/messages', (req, res) => {
+    let message = new Message(req.body);
+  
+    message.save((err) => {
+      if(err) sendStatus(500);
+  
+      io.emit('message', req.body);
+      res.sendStatus(200);
+    });
+  });
     
     //callback hell post request and remove happens after the save!!!
     // app.post('/messages', (req, res) => {
@@ -79,26 +82,26 @@ module.exports = (app) => {
     // });
     
   //now using async
-  app.post('/messages', async (req, res) => {
-    try {
-      let message = new Message(req.body);
+  // app.post('/messages', async (req, res) => {
+  //   try {
+  //     let message = new Message(req.body);
       
-        let savedMessage = await message.save();
+  //       let savedMessage = await message.save();
       
-        console.log('saved');
+  //       console.log('saved');
       
-        let censored = await Message.findOne({message: 'badword'});
+  //       let censored = await Message.findOne({message: 'badword'});
       
-        if(censored) {
-          await Message.remove({_id: censored.id});
-        } else {
-          io.emit('message', req.body);
-        }
+  //       if(censored) {
+  //         await Message.remove({_id: censored.id});
+  //       } else {
+  //         io.emit('message', req.body);
+  //       }
       
-        res.sendStatus(200);
-    } catch (err) {
-      res.sendStatus(500);
-      return console.error(err);
-    }
-  });
-}
+  //       res.sendStatus(200);
+  //   } catch (err) {
+  //     res.sendStatus(500);
+  //     return console.error(err);
+  //   }
+  // });
+};
